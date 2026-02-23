@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { CalendarClock, Play, Trash2 } from "lucide-react";
-import { playAlarmSound } from "@/lib/sound";
+import { speakMessage } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,7 +56,7 @@ const ScheduledTimer = () => {
         prev.map((entry) => {
           const now = Date.now();
           if (entry.status === "waiting" && now >= entry.startTime.getTime()) {
-            playAlarmSound(); // Sound when schedule starts
+            speakMessage("Time Start"); // Voice when schedule starts
             return {
               ...entry,
               status: "running" as const,
@@ -68,7 +68,7 @@ const ScheduledTimer = () => {
             const left = Math.max(0, endTime - now);
             const isDone = left <= 0;
             if (isDone && entry.status === "running") {
-              playAlarmSound(); // Sound when timer finishes
+              speakMessage("Time Over"); // Voice when timer finishes
             }
             return {
               ...entry,

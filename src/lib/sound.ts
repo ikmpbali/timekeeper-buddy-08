@@ -20,3 +20,15 @@ export const playAlarmSound = () => {
   playBeep(now + 0.2, 880, 0.15);
   playBeep(now + 0.4, 1100, 0.3);
 };
+
+// Voice announcement using Web Speech API
+export const speakMessage = (message: string) => {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    window.speechSynthesis.speak(utterance);
+  }
+};
