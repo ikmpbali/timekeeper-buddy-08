@@ -17,18 +17,22 @@ interface ScheduledEntry {
 const pad = (n: number) => String(n).padStart(2, "0");
 
 const ScheduledTimer = () => {
+  const [startDateStr, setStartDateStr] = useState(() => {
+    const today = new Date();
+    return today.toISOString().slice(0, 10);
+  });
   const [startTimeStr, setStartTimeStr] = useState("");
   const [durationMin, setDurationMin] = useState("5");
   const [entries, setEntries] = useState<ScheduledEntry[]>([]);
   const intervalRef = useRef<number | null>(null);
 
   const addEntry = useCallback(() => {
-    if (!startTimeStr || !durationMin) return;
+    if (!startTimeStr || !durationMin || !startDateStr) return;
     const [h, m] = startTimeStr.split(":").map(Number);
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
-    if (start <= now) {
-      start.setDate(start.getDate() + 1);
+    const [year, month, day] = startDateStr.split("-").map(Number);
+    const start = new Date(year, month - 1, day, h, m, 0);
+    if (start <= new Date()) {
+      return; // Don't allow past times
     }
     setEntries((prev) => [
       ...prev,
@@ -40,7 +44,7 @@ const ScheduledTimer = () => {
         remaining: 0,
       },
     ]);
-  }, [startTimeStr, durationMin]);
+  }, [startTimeStr, startDateStr, durationMin]);
 
   const removeEntry = useCallback((id: number) => {
     setEntries((prev) => prev.filter((e) => e.id !== id));
@@ -52,6 +56,7 @@ const ScheduledTimer = () => {
         prev.map((entry) => {
           const now = Date.now();
           if (entry.status === "waiting" && now >= entry.startTime.getTime()) {
+            playAlarmSound(); // Sound when schedule starts
             return {
               ...entry,
               status: "running" as const,
@@ -61,11 +66,14 @@ const ScheduledTimer = () => {
           if (entry.status === "running") {
             const endTime = entry.startTime.getTime() + entry.durationMin * 60 * 1000;
             const left = Math.max(0, endTime - now);
+            const isDone = left <= 0;
+            if (isDone && entry.status === "running") {
+              playAlarmSound(); // Sound when timer finishes
+            }
             return {
               ...entry,
               remaining: left,
-              status: left <= 0 ? ("done" as const) : ("running" as const),
-              ...(left <= 0 && entry.status === "running" ? (() => { playAlarmSound(); return {}; })() : {}),
+              status: isDone ? ("done" as const) : ("running" as const),
             };
           }
           return entry;
@@ -77,8 +85,10 @@ const ScheduledTimer = () => {
 
   const formatRemaining = (ms: number) => {
     const totalSec = Math.ceil(ms / 1000);
-    const m = Math.floor(totalSec / 60);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
     const s = totalSec % 60;
+    if (h > 0) return `${pad(h)}:${pad(m)}:${pad(s)}`;
     return `${pad(m)}:${pad(s)}`;
   };
 
@@ -102,6 +112,15 @@ const ScheduledTimer = () => {
       </div>
 
       <div className="flex flex-wrap gap-3 items-end justify-center">
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs text-muted-foreground">Date</Label>
+          <Input
+            type="date"
+            value={startDateStr}
+            onChange={(e) => setStartDateStr(e.target.value)}
+            className="w-40 font-mono bg-secondary border-border"
+          />
+        </div>
         <div className="flex flex-col gap-1">
           <Label className="text-xs text-muted-foreground">Start At</Label>
           <Input
@@ -127,12 +146,18 @@ const ScheduledTimer = () => {
       </div>
 
       {entries.length > 0 && (
-        <div className="w-full max-w-md flex flex-col gap-2">
+        <div className="w-full max-w-md flex flex-col gap-3">
           {entries.map((entry) => (
             <Card key={entry.id} className="bg-secondary/50 border-border">
-              <CardContent className="flex items-center justify-between p-4">
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-mono text-foreground">
+              <CardContent className="flex items-center justify-between p-5">
+                <div className="flex flex-col gap-2">
+                  <span className="text-base font-mono font-semibold text-foreground">
+                    {entry.startTime.toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    })}{" "}
+                    ·{" "}
                     {entry.startTime.toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -140,19 +165,27 @@ const ScheduledTimer = () => {
                     })}{" "}
                     · {entry.durationMin} min
                   </span>
-                  <span
-                    className={`text-xs font-medium ${
-                      entry.status === "waiting"
-                        ? "text-muted-foreground"
-                        : entry.status === "running"
-                        ? "text-primary"
-                        : "text-destructive"
-                    }`}
-                  >
-                    {entry.status === "waiting" && formatTimeUntil(entry.startTime)}
-                    {entry.status === "running" && `⏱ ${formatRemaining(entry.remaining)} left`}
-                    {entry.status === "done" && "⏰ Done!"}
-                  </span>
+
+                  {entry.status === "running" && (
+                    <span
+                      className="text-2xl md:text-3xl font-mono font-bold text-primary"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                    >
+                      ⏱ {formatRemaining(entry.remaining)}
+                    </span>
+                  )}
+
+                  {entry.status === "waiting" && (
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {formatTimeUntil(entry.startTime)}
+                    </span>
+                  )}
+
+                  {entry.status === "done" && (
+                    <span className="text-lg font-bold text-destructive animate-pulse">
+                      ⏰ Done!
+                    </span>
+                  )}
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => removeEntry(entry.id)}>
                   <Trash2 className="w-4 h-4 text-muted-foreground" />
