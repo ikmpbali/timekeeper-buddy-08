@@ -3,10 +3,12 @@ import Stopwatch from "@/components/Stopwatch";
 import Countdown from "@/components/Countdown";
 import ScheduledTimer from "@/components/ScheduledTimer";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import logoBis from "@/assets/logo-bis.png";
 
 const Index = () => {
   return (
-    <div className="flex flex-col min-h-screen items-center bg-background px-4 py-8 md:py-12">
+    <div className="relative flex flex-col min-h-screen items-center bg-background px-4 py-8 md:py-12">
+      <img src={logoBis} alt="BIS Logo" className="absolute top-4 right-4 w-14 h-14 md:w-16 md:h-16 rounded-full" />
       <header className="mb-10 text-center">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-1">
           ⏱ Timer BIS
