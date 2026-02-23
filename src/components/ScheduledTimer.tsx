@@ -168,8 +168,8 @@ const ScheduledTimer = () => {
 
                   {entry.status === "running" && (
                     <span
-                      className="text-2xl md:text-3xl font-mono font-bold text-primary"
-                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                      className="text-4xl md:text-6xl font-mono font-bold"
+                      style={{ fontFamily: "'JetBrains Mono', monospace", color: 'hsl(50, 100%, 50%)' }}
                     >
                       ⏱ {formatRemaining(entry.remaining)}
                     </span>
