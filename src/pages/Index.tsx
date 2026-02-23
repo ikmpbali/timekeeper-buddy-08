@@ -9,7 +9,7 @@ const Index = () => {
     <div className="flex flex-col min-h-screen items-center bg-background px-4 py-8 md:py-12">
       <header className="mb-10 text-center">
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-1">
-          ⏱ Timer Studio
+          ⏱ Timer BIS
         </h1>
         <p className="text-muted-foreground text-sm">Your all-in-one timing companion</p>
       </header>
