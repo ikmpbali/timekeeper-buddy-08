@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Play, Pause, RotateCcw, Hourglass } from "lucide-react";
+import { playAlarmSound } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +37,7 @@ const Countdown = () => {
       if (left <= 0) {
         clearInterval(intervalRef.current!);
         setRunning(false);
+        playAlarmSound();
       }
     }, 100);
     setRunning(true);

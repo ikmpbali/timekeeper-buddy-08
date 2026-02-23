@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { CalendarClock, Play, Trash2 } from "lucide-react";
+import { playAlarmSound } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,6 +65,7 @@ const ScheduledTimer = () => {
               ...entry,
               remaining: left,
               status: left <= 0 ? ("done" as const) : ("running" as const),
+              ...(left <= 0 && entry.status === "running" ? (() => { playAlarmSound(); return {}; })() : {}),
             };
           }
           return entry;
