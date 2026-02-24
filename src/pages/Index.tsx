@@ -39,6 +39,10 @@ const Index = () => {
           <ScheduledTimer />
         </TabsContent>
       </Tabs>
+
+      <footer className="mt-auto pt-10 pb-4 text-center text-muted-foreground text-xs">
+        Powered by Bali Island School © {new Date().getFullYear()}
+      </footer>
     </div>
   );
 };
